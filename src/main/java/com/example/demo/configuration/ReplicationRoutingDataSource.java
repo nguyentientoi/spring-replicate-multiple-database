@@ -3,21 +3,22 @@
  */
 package com.example.demo.configuration;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-
-import com.example.demo.constant.DataSourceType;
 
 /**
  * @author toifi
  *
  */
 public class ReplicationRoutingDataSource extends AbstractRoutingDataSource {
+	private static final Logger logger = LoggerFactory.getLogger(ReplicationRoutingDataSource.class);
 
 	@Override
 	protected Object determineCurrentLookupKey() {
-		return TransactionSynchronizationManager.isCurrentTransactionReadOnly() ? DataSourceType.READ_ONLY
-				: DataSourceType.READ_WRITE;
+		logger.info("Current datasource lookup key: " + DynamicDataSourceContextHolder.getDataSourceKey());
+
+		return DynamicDataSourceContextHolder.getDataSourceKey();
 	}
 
 }

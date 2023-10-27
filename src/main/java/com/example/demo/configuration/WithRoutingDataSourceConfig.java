@@ -10,9 +10,7 @@ import java.util.Properties;
 import javax.sql.DataSource;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -20,8 +18,6 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.datasource.LazyConnectionDataSourceProxy;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
-import org.springframework.orm.jpa.vendor.HibernateJpaDialect;
-import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import com.example.demo.DemoApplication;
@@ -68,12 +64,13 @@ public class WithRoutingDataSourceConfig {
 		bean.setPersistenceUnitName(getClass().getSimpleName());
 		bean.setPersistenceProvider(new HibernatePersistenceProvider());
 
-		HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
-		HibernateJpaDialect jpaDialect = jpaVendorAdapter.getJpaDialect();
-		jpaDialect.setPrepareConnection(false);
+		// Don't need
+		// HibernateJpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
+		// HibernateJpaDialect jpaDialect = jpaVendorAdapter.getJpaDialect();
+		// jpaDialect.setPrepareConnection(false);
 
-		bean.setJpaVendorAdapter(jpaVendorAdapter);
-		bean.setJpaProperties(additionalProperties());
+		// bean.setJpaVendorAdapter(jpaVendorAdapter);
+		// bean.setJpaProperties(additionalProperties());
 		return bean;
 	}
 
@@ -140,20 +137,19 @@ public class WithRoutingDataSourceConfig {
 		return connectionPoolDataSource(dataSource, determinePoolName(DataSourceType.READ_ONLY));
 	}
 
-	@Bean
-	public BeanPostProcessor dialectProcessor() {
-		return new BeanPostProcessor() {
-
-			@Override
-			public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-				if (bean instanceof HibernateJpaVendorAdapter) {
-					((HibernateJpaVendorAdapter) bean).setPrepareConnection(false);
-				}
-				return bean;
-			}
-
-		};
-	}
+	/*
+	 * Don't create BeanPostProcessor because AOP is always order before service
+	 * 
+	 * @Bean public BeanPostProcessor dialectProcessor() { return new
+	 * BeanPostProcessor() {
+	 * 
+	 * @Override public Object postProcessBeforeInitialization(Object bean, String
+	 * beanName) throws BeansException { if (bean instanceof
+	 * HibernateJpaVendorAdapter) { ((HibernateJpaVendorAdapter)
+	 * bean).setPrepareConnection(false); } return bean; }
+	 * 
+	 * }; }
+	 */
 
 	private Properties additionalProperties() {
 		Properties properties = new Properties();

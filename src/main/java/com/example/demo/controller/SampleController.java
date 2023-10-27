@@ -4,6 +4,8 @@
 package com.example.demo.controller;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +30,23 @@ public class SampleController {
 	private ISampleService sampleService;
 
 	@GetMapping(value = "/list")
-	public List<Sample> index() {
+	public Map<String, Object> index() {
 		Sample sample = new Sample();
 		sample.setName(RandomStringUtils.random(20, true, false));
-		sampleService.insert(sample);
 
+		// RoutingTransaction is readonly = false
+		sample = sampleService.insert(sample);
+
+		// Don't setting RoutingTransaction
+		// RoutingTransaction is default readonly = false
+		Optional<Sample> _sample = sampleService.findById(sample.getId());
+
+		// RoutingTransaction is readonly = true
 		List<Sample> samples = sampleService.findAll();
 
-		return samples;
+		Map<String, Object> data = Map.of("master", _sample.orElse(null), "slave", samples);
+
+		return data;
 	}
 
 }
